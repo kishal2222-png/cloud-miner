@@ -14,8 +14,14 @@ function MinePage({ user, setUser, refreshUser }) {
   // Slider state
   const [sliderValue, setSliderValue] = useState(100);
   const [tonPerHs, setTonPerHs] = useState(0.0005);
-  const [buying, setBuying] = useState(false);
-  const [buyResult, setBuyResult] = useState(null);
+
+  // Deposit flow state
+  const [depositStep, setDepositStep] = useState(0); // 0=select, 1=memo, 2=checking
+  const [pendingDeposit, setPendingDeposit] = useState(null);
+  const [depositWallet, setDepositWallet] = useState('');
+  const [depositLoading, setDepositLoading] = useState(false);
+  const [depositMsg, setDepositMsg] = useState(null);
+  const [checkCount, setCheckCount] = useState(0);
 
   const fetchStatus = useCallback(async () => {
     try {
@@ -36,7 +42,6 @@ function MinePage({ user, setUser, refreshUser }) {
     return () => clearInterval(interval);
   }, [fetchStatus]);
 
-  // Real-time ticker
   useEffect(() => {
     if (tonPerSecond <= 0) return;
     const increment = tonPerSecond / 10;
@@ -61,26 +66,63 @@ function MinePage({ user, setUser, refreshUser }) {
     setCollecting(false);
   }
 
-  async function handleBuyHashrate() {
-    const cost = Math.round(sliderValue * tonPerHs * 100000) / 100000;
-    if ((user.balance_ton || 0) < cost) {
-      setBuyResult({ type: 'error', msg: `Not enough TON. Need ${cost} TON` });
-      setTimeout(() => setBuyResult(null), 3000);
-      return;
-    }
-    setBuying(true);
-    setBuyResult(null);
+  async function handleStartDeposit() {
+    setDepositLoading(true);
+    setDepositMsg(null);
     try {
-      const result = await api.buyHashrate(user.telegram_id, sliderValue);
-      setBuyResult({ type: 'success', msg: `✅ +${sliderValue} H/s purchased for ${cost} TON!` });
-      await refreshUser();
-      await fetchStatus();
-      setTimeout(() => setBuyResult(null), 4000);
+      const result = await api.createDeposit(user.telegram_id, sliderValue);
+      setPendingDeposit(result.deposit);
+      setDepositWallet(result.wallet);
+      setDepositStep(1);
     } catch (err) {
-      setBuyResult({ type: 'error', msg: err.message });
-      setTimeout(() => setBuyResult(null), 3000);
+      setDepositMsg({ type: 'error', text: err.message });
+      setTimeout(() => setDepositMsg(null), 3000);
     }
-    setBuying(false);
+    setDepositLoading(false);
+  }
+
+  function handleConfirmSent() {
+    setDepositStep(2);
+    setCheckCount(0);
+  }
+
+  async function handleCheckDeposit() {
+    if (!pendingDeposit) return;
+    setDepositLoading(true);
+    try {
+      const result = await api.checkDeposit(user.telegram_id, pendingDeposit.id);
+      if (result.deposit?.status === 'confirmed') {
+        setDepositMsg({ type: 'success', text: `✅ Confirmed! +${pendingDeposit.hashrate} H/s added!` });
+        setDepositStep(0);
+        setPendingDeposit(null);
+        await refreshUser();
+        await fetchStatus();
+        setTimeout(() => setDepositMsg(null), 5000);
+      } else {
+        setCheckCount(c => c + 1);
+        setDepositMsg({ type: 'info', text: '⏳ Not found yet. Admin will confirm soon.' });
+        setTimeout(() => setDepositMsg(null), 4000);
+      }
+    } catch (err) {
+      setDepositMsg({ type: 'error', text: err.message });
+      setTimeout(() => setDepositMsg(null), 3000);
+    }
+    setDepositLoading(false);
+  }
+
+  async function handleCancelDeposit() {
+    if (!pendingDeposit) return;
+    try { await api.cancelDeposit(user.telegram_id, pendingDeposit.id); } catch (err) {}
+    setDepositStep(0);
+    setPendingDeposit(null);
+    setDepositMsg(null);
+  }
+
+  function copyText(text) {
+    navigator.clipboard.writeText(text).then(() => {
+      setDepositMsg({ type: 'success', text: '📋 Copied!' });
+      setTimeout(() => setDepositMsg(null), 1500);
+    });
   }
 
   function formatBalance(val) {
@@ -105,29 +147,15 @@ function MinePage({ user, setUser, refreshUser }) {
     return h.toString();
   }
 
-  function formatTonPerHour(tps) {
-    const perHour = tps * 3600;
-    if (perHour < 0.001) return perHour.toFixed(8);
-    if (perHour < 1) return perHour.toFixed(6);
-    return perHour.toFixed(4);
-  }
-
   const totalHashrate = miningStatus?.total_hashrate || user.total_hashrate || 100;
-  const baseHashrate = miningStatus?.base_hashrate || user.hashrate || 100;
-  const bonusHashrate = miningStatus?.bonus_hashrate || 0;
-  const speedPercent = Math.min((totalHashrate / 1000000) * 100, 100);
   const walletBalance = miningStatus?.balance_ton || user.balance_ton || 0;
   const sliderCost = Math.round(sliderValue * tonPerHs * 100000) / 100000;
-  const canAfford = walletBalance >= sliderCost;
 
   return (
     <div className="mine-page">
-      {/* Header */}
       <div className="mine-header">
         <div className="mine-user">
-          <div className="mine-avatar">
-            {user.first_name ? user.first_name[0].toUpperCase() : '?'}
-          </div>
+          <div className="mine-avatar">{user.first_name ? user.first_name[0].toUpperCase() : '?'}</div>
           <div className="mine-user-info">
             <span className="mine-user-name">{user.first_name || 'Miner'}</span>
             <span className="mine-user-level">Level {user.level || 1}</span>
@@ -139,13 +167,11 @@ function MinePage({ user, setUser, refreshUser }) {
         </div>
       </div>
 
-      {/* Wallet Balance */}
       <div className="wallet-balance-bar">
         <span className="wallet-balance-label">💎 Wallet</span>
         <span className="wallet-balance-value">{formatBalance(walletBalance)} TON</span>
       </div>
 
-      {/* Mining Dashboard */}
       <div className="mining-dashboard mining-active" id="mining-dashboard">
         <div className="mining-particles">
           <div className="particle" /><div className="particle" /><div className="particle" />
@@ -160,7 +186,6 @@ function MinePage({ user, setUser, refreshUser }) {
               <span className="mining-coin-name">TON</span>
             </div>
           </div>
-
           <div className="mining-balance">
             <div className="mining-balance-label">Uncollected</div>
             <span className="mining-balance-value">{formatBalance(displayBalance)}</span>
@@ -173,21 +198,14 @@ function MinePage({ user, setUser, refreshUser }) {
           Pool mining active
         </div>
 
-        <button
-          className="collect-btn"
-          onClick={handleCollect}
-          disabled={collecting || displayBalance < 0.000000001}
-        >
+        <button className="collect-btn" onClick={handleCollect} disabled={collecting || displayBalance < 0.000000001}>
           {collecting ? '⏳ Collecting...' : '💰 Collect TON'}
         </button>
 
         {collectResult && (
-          <div className="collect-result">
-            ✅ Collected {formatBalance(collectResult.collected)} TON
-          </div>
+          <div className="collect-result">✅ Collected {formatBalance(collectResult.collected)} TON</div>
         )}
 
-        {/* Income Projections — inside mining card */}
         <div className="income-section-inline">
           <div className="income-title">📈 Income Projection</div>
           <div className="income-grid">
@@ -210,45 +228,101 @@ function MinePage({ user, setUser, refreshUser }) {
         </div>
       </div>
 
-      {/* Hashrate Slider — Buy Power */}
+      {/* Buy Mining Power — 3-Step Deposit */}
       <div className="slider-section">
-        <div className="slider-header">
-          <span className="slider-title">⚡ Buy Mining Power</span>
-          <span className="slider-subtitle">Permanent boost • 1 TON = {Math.round(1 / tonPerHs)} H/s</span>
-        </div>
+        {depositMsg && (
+          <div className={`deposit-msg ${depositMsg.type}`}>{depositMsg.text}</div>
+        )}
 
-        <div className="slider-display">
-          <div className="slider-hs-value">+{formatHashrate(sliderValue)} H/s</div>
-          <div className="slider-cost">💎 {sliderCost.toFixed(5)} TON</div>
-        </div>
+        {/* Step 0: Select hashrate */}
+        {depositStep === 0 && (
+          <>
+            <div className="slider-header">
+              <span className="slider-title">⚡ Buy Mining Power</span>
+              <span className="slider-subtitle">Permanent boost • Pay with TON</span>
+            </div>
 
-        <div className="slider-container">
-          <input
-            type="range"
-            className="hashrate-slider"
-            min="100"
-            max="10000"
-            step="100"
-            value={sliderValue}
-            onChange={e => setSliderValue(parseInt(e.target.value))}
-          />
-          <div className="slider-labels">
-            <span>100 H/s</span>
-            <span>5K H/s</span>
-            <span>10K H/s</span>
+            <div className="slider-display">
+              <div className="slider-hs-value">+{formatHashrate(sliderValue)} H/s</div>
+              <div className="slider-cost">💎 {sliderCost.toFixed(5)} TON</div>
+            </div>
+
+            <div className="slider-container">
+              <input type="range" className="hashrate-slider" min="100" max="10000" step="100"
+                value={sliderValue} onChange={e => setSliderValue(parseInt(e.target.value))} />
+              <div className="slider-labels">
+                <span>100 H/s</span><span>5K H/s</span><span>10K H/s</span>
+              </div>
+            </div>
+
+            <button className="buy-hashrate-btn" onClick={handleStartDeposit} disabled={depositLoading}>
+              {depositLoading ? '⏳ Creating...' : `💎 Buy +${formatHashrate(sliderValue)} H/s — ${sliderCost.toFixed(5)} TON`}
+            </button>
+          </>
+        )}
+
+        {/* Step 1: Show wallet + memo */}
+        {depositStep === 1 && pendingDeposit && (
+          <div className="deposit-info">
+            <div className="deposit-step-title">📤 Step 1: Send TON</div>
+            <div className="deposit-summary">
+              <span className="deposit-hs-badge">+{pendingDeposit.hashrate} H/s</span>
+              <span className="deposit-amount-badge">💎 {pendingDeposit.amount} TON</span>
+            </div>
+
+            <div className="deposit-field">
+              <label>Wallet address:</label>
+              <div className="deposit-copy-row" onClick={() => copyText(depositWallet)}>
+                <span className="deposit-mono">{depositWallet}</span>
+                <span className="copy-icon">📋</span>
+              </div>
+            </div>
+
+            <div className="deposit-field">
+              <label>Amount:</label>
+              <div className="deposit-copy-row" onClick={() => copyText(String(pendingDeposit.amount))}>
+                <span className="deposit-mono">{pendingDeposit.amount} TON</span>
+                <span className="copy-icon">📋</span>
+              </div>
+            </div>
+
+            <div className="deposit-field">
+              <label>⚠️ Memo (REQUIRED):</label>
+              <div className="deposit-copy-row memo-highlight" onClick={() => copyText(pendingDeposit.memo)}>
+                <span className="deposit-mono deposit-memo">{pendingDeposit.memo}</span>
+                <span className="copy-icon">📋</span>
+              </div>
+            </div>
+
+            <div className="deposit-warning">
+              ⚠️ Send EXACT amount with this MEMO. Without memo, payment cannot be confirmed!
+            </div>
+
+            <button className="buy-hashrate-btn" onClick={handleConfirmSent}>✅ I've sent the payment</button>
+            <button className="deposit-cancel-btn" onClick={handleCancelDeposit}>Cancel</button>
           </div>
-        </div>
+        )}
 
-        <button
-          className="buy-hashrate-btn"
-          onClick={handleBuyHashrate}
-          disabled={buying || !canAfford}
-        >
-          {buying ? '⏳ Processing...' : canAfford ? `Buy +${formatHashrate(sliderValue)} H/s for ${sliderCost.toFixed(5)} TON` : `Need ${sliderCost.toFixed(5)} TON`}
-        </button>
+        {/* Step 2: Checking */}
+        {depositStep === 2 && pendingDeposit && (
+          <div className="deposit-info">
+            <div className="deposit-step-title">🔍 Step 2: Verifying</div>
+            <div className="deposit-summary">
+              <span>Memo: <strong>{pendingDeposit.memo}</strong></span>
+              <span>💎 {pendingDeposit.amount} TON → +{pendingDeposit.hashrate} H/s</span>
+            </div>
 
-        {buyResult && (
-          <div className={`buy-result ${buyResult.type}`}>{buyResult.msg}</div>
+            <div className="deposit-checking">
+              <div className="deposit-spinner" />
+              <div>Waiting for admin confirmation...</div>
+              {checkCount > 0 && <div className="deposit-check-count">Checked {checkCount} time(s)</div>}
+            </div>
+
+            <button className="buy-hashrate-btn" onClick={handleCheckDeposit} disabled={depositLoading}>
+              {depositLoading ? '⏳ Checking...' : '🔄 Check Payment'}
+            </button>
+            <button className="deposit-cancel-btn" onClick={handleCancelDeposit}>Cancel</button>
+          </div>
         )}
       </div>
     </div>

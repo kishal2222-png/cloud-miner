@@ -30,4 +30,10 @@ export const api = {
 
   createWithdrawal: (data) => request('/withdrawals/create', { method: 'POST', body: JSON.stringify(data) }),
   getWithdrawals: (telegramId) => request(`/withdrawals/${telegramId}`),
+
+  // Deposit (TON → hashrate)
+  createDeposit: (telegram_id, hashrate) => request('/deposit/create', { method: 'POST', body: JSON.stringify({ telegram_id, hashrate }) }),
+  checkDeposit: (telegram_id, id) => request(`/deposit/check/${id}`, { method: 'POST', body: JSON.stringify({ telegram_id }) }),
+  cancelDeposit: (telegram_id, id) => request(`/deposit/cancel/${id}`, { method: 'POST', body: JSON.stringify({ telegram_id }) }),
+  getDepositHistory: (telegramId) => request(`/deposit/history/${telegramId}`),
 };

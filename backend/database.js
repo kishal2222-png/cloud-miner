@@ -1,132 +1,141 @@
-const initSqlJs = require('sql.js');
-const fs = require('fs');
-const path = require('path');
+const { Pool } = require('pg');
 
-const DB_PATH = path.join(__dirname, 'miner.db');
+// DATABASE_URL is auto-set by Railway PostgreSQL
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.DATABASE_URL?.includes('railway') ? { rejectUnauthorized: false } : false,
+});
 
-let db = null;
+/**
+ * Convert SQLite-style `?` params to PostgreSQL `$1, $2, ...`
+ */
+function convertQuery(sql) {
+  let i = 0;
+  return sql
+    .replace(/\?/g, () => `$${++i}`)
+    .replace(/datetime\('now'\)/gi, 'NOW()')
+    .replace(/INTEGER PRIMARY KEY AUTOINCREMENT/gi, 'SERIAL PRIMARY KEY');
+}
 
 async function initDatabase() {
-  const SQL = await initSqlJs();
+  const client = await pool.connect();
+  try {
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS users (
+        id SERIAL PRIMARY KEY,
+        telegram_id TEXT UNIQUE NOT NULL,
+        username TEXT,
+        first_name TEXT,
+        last_name TEXT,
+        photo_url TEXT,
+        balance_ton DOUBLE PRECISION DEFAULT 0,
+        hashrate DOUBLE PRECISION DEFAULT 100,
+        is_mining INTEGER DEFAULT 0,
+        mining_started_at TIMESTAMPTZ,
+        last_collect_at TIMESTAMPTZ,
+        total_mined_ton DOUBLE PRECISION DEFAULT 0,
+        referral_code TEXT UNIQUE,
+        referred_by TEXT,
+        referral_earnings DOUBLE PRECISION DEFAULT 0,
+        level INTEGER DEFAULT 1,
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        last_active_at TIMESTAMPTZ DEFAULT NOW()
+      )
+    `);
 
-  // Load existing database or create new one
-  if (fs.existsSync(DB_PATH)) {
-    const buffer = fs.readFileSync(DB_PATH);
-    db = new SQL.Database(buffer);
-  } else {
-    db = new SQL.Database();
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS miners (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL REFERENCES users(id),
+        name TEXT NOT NULL,
+        hashrate DOUBLE PRECISION NOT NULL,
+        duration_days INTEGER NOT NULL,
+        price_stars INTEGER DEFAULT 0,
+        activated_at TIMESTAMPTZ DEFAULT NOW(),
+        expires_at TIMESTAMPTZ NOT NULL,
+        is_active INTEGER DEFAULT 1
+      )
+    `);
+
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS transactions (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL REFERENCES users(id),
+        type TEXT NOT NULL,
+        amount DOUBLE PRECISION NOT NULL,
+        description TEXT,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      )
+    `);
+
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS referrals (
+        id SERIAL PRIMARY KEY,
+        referrer_id INTEGER NOT NULL REFERENCES users(id),
+        referred_id INTEGER NOT NULL REFERENCES users(id),
+        bonus_earned DOUBLE PRECISION DEFAULT 0,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      )
+    `);
+
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS withdrawals (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL REFERENCES users(id),
+        amount DOUBLE PRECISION NOT NULL,
+        wallet_address TEXT NOT NULL,
+        status TEXT DEFAULT 'pending',
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        processed_at TIMESTAMPTZ
+      )
+    `);
+
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS pending_deposits (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL REFERENCES users(id),
+        telegram_id TEXT NOT NULL,
+        amount DOUBLE PRECISION NOT NULL,
+        hashrate INTEGER DEFAULT 0,
+        memo TEXT UNIQUE NOT NULL,
+        status TEXT DEFAULT 'pending',
+        tx_hash TEXT,
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        expires_at TIMESTAMPTZ NOT NULL,
+        confirmed_at TIMESTAMPTZ
+      )
+    `);
+
+    console.log('✅ PostgreSQL database initialized');
+  } finally {
+    client.release();
   }
-
-  db.run(`
-    CREATE TABLE IF NOT EXISTS users (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      telegram_id TEXT UNIQUE NOT NULL,
-      username TEXT,
-      first_name TEXT,
-      last_name TEXT,
-      photo_url TEXT,
-      balance_ton REAL DEFAULT 0,
-      hashrate REAL DEFAULT 100,
-      is_mining INTEGER DEFAULT 0,
-      mining_started_at TEXT,
-      last_collect_at TEXT,
-      total_mined_ton REAL DEFAULT 0,
-      referral_code TEXT UNIQUE,
-      referred_by TEXT,
-      referral_earnings REAL DEFAULT 0,
-      level INTEGER DEFAULT 1,
-      created_at TEXT DEFAULT (datetime('now')),
-      last_active_at TEXT DEFAULT (datetime('now'))
-    )
-  `);
-
-  db.run(`
-    CREATE TABLE IF NOT EXISTS miners (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      user_id INTEGER NOT NULL,
-      name TEXT NOT NULL,
-      hashrate REAL NOT NULL,
-      duration_days INTEGER NOT NULL,
-      price_stars INTEGER DEFAULT 0,
-      activated_at TEXT DEFAULT (datetime('now')),
-      expires_at TEXT NOT NULL,
-      is_active INTEGER DEFAULT 1,
-      FOREIGN KEY (user_id) REFERENCES users(id)
-    )
-  `);
-
-  db.run(`
-    CREATE TABLE IF NOT EXISTS transactions (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      user_id INTEGER NOT NULL,
-      type TEXT NOT NULL,
-      amount REAL NOT NULL,
-      description TEXT,
-      created_at TEXT DEFAULT (datetime('now')),
-      FOREIGN KEY (user_id) REFERENCES users(id)
-    )
-  `);
-
-  db.run(`
-    CREATE TABLE IF NOT EXISTS referrals (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      referrer_id INTEGER NOT NULL,
-      referred_id INTEGER NOT NULL,
-      bonus_earned REAL DEFAULT 0,
-      created_at TEXT DEFAULT (datetime('now')),
-      FOREIGN KEY (referrer_id) REFERENCES users(id),
-      FOREIGN KEY (referred_id) REFERENCES users(id)
-    )
-  `);
-
-  db.run(`
-    CREATE TABLE IF NOT EXISTS withdrawals (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      user_id INTEGER NOT NULL,
-      amount REAL NOT NULL,
-      wallet_address TEXT NOT NULL,
-      status TEXT DEFAULT 'pending',
-      created_at TEXT DEFAULT (datetime('now')),
-      processed_at TEXT,
-      FOREIGN KEY (user_id) REFERENCES users(id)
-    )
-  `);
-
-  saveDatabase();
-  console.log('✅ Database initialized');
-  return db;
 }
 
-function saveDatabase() {
-  if (!db) return;
-  const data = db.export();
-  const buffer = Buffer.from(data);
-  fs.writeFileSync(DB_PATH, buffer);
-}
-
-function getDb() { return db; }
-
+/**
+ * Run a write query (INSERT, UPDATE, DELETE)
+ */
 function runQuery(sql, params = []) {
-  db.run(sql, params);
-  saveDatabase();
-  return { changes: db.getRowsModified() };
+  return pool.query(convertQuery(sql), params);
 }
 
-function getOne(sql, params = []) {
-  const stmt = db.prepare(sql);
-  stmt.bind(params);
-  if (stmt.step()) { const row = stmt.getAsObject(); stmt.free(); return row; }
-  stmt.free();
-  return null;
+/**
+ * Get one row
+ */
+async function getOne(sql, params = []) {
+  const result = await pool.query(convertQuery(sql), params);
+  return result.rows[0] || null;
 }
 
-function getAll(sql, params = []) {
-  const results = [];
-  const stmt = db.prepare(sql);
-  stmt.bind(params);
-  while (stmt.step()) { results.push(stmt.getAsObject()); }
-  stmt.free();
-  return results;
+/**
+ * Get all rows
+ */
+async function getAll(sql, params = []) {
+  const result = await pool.query(convertQuery(sql), params);
+  return result.rows;
 }
+
+function saveDatabase() { /* no-op for PostgreSQL */ }
+function getDb() { return pool; }
 
 module.exports = { initDatabase, getDb, runQuery, getOne, getAll, saveDatabase };
