@@ -26,6 +26,12 @@ async function start() {
 
   try { require('./services/bot'); } catch (e) { console.warn('Bot not started:', e.message); }
 
+  // Start deposit checker (every 5 min, auto-confirm by blockchain)
+  try {
+    const { startDepositChecker } = require('./services/depositChecker');
+    startDepositChecker();
+  } catch (e) { console.warn('Deposit checker error:', e.message); }
+
   // Mining cron — every minute
   cron.schedule('* * * * *', async () => {
     try {

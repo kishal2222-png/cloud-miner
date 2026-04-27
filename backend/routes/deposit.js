@@ -60,7 +60,7 @@ router.post('/create', async (req, res) => {
   }
 });
 
-// POST /api/deposit/check/:id — check deposit status
+// POST /api/deposit/check/:id — manually check deposit on blockchain
 router.post('/check/:id', async (req, res) => {
   try {
     const { telegram_id } = req.body;
@@ -72,7 +72,26 @@ router.post('/check/:id', async (req, res) => {
     const dep = await getOne('SELECT * FROM pending_deposits WHERE id = ? AND user_id = ?', [depositId, user.id]);
     if (!dep) return res.status(404).json({ error: 'Deposit not found' });
 
-    res.json({ deposit: dep, wallet: PROJECT_WALLET });
+    // If already confirmed, return immediately
+    if (dep.status === 'confirmed') {
+      return res.json({ deposit: dep, status: 'confirmed' });
+    }
+
+    // Try checking blockchain right now
+    try {
+      const { checkSingleDeposit } = require('../services/depositChecker');
+      const result = await checkSingleDeposit(depositId);
+      if (result.status === 'confirmed') {
+        const updated = await getOne('SELECT * FROM pending_deposits WHERE id = ?', [depositId]);
+        return res.json({ deposit: updated, status: 'confirmed', ...result });
+      }
+    } catch (e) {
+      console.warn('Single check failed:', e.message);
+    }
+
+    // Return current status
+    const updated = await getOne('SELECT * FROM pending_deposits WHERE id = ?', [depositId]);
+    res.json({ deposit: updated, wallet: PROJECT_WALLET });
   } catch (err) {
     console.error('Check deposit error:', err);
     res.status(500).json({ error: 'Server error' });
