@@ -1,0 +1,5 @@
+node_modules/
+miner.db
+.env
+dist/
+*.log

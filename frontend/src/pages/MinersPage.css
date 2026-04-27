@@ -1,0 +1,221 @@
+.miners-page {
+  padding: 16px;
+  animation: fadeIn 0.3s ease;
+}
+
+.miners-page .page-title {
+  font-size: 22px;
+  font-weight: 800;
+  margin-bottom: 6px;
+}
+
+.miners-subtitle {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+
+/* Active miners section */
+.active-miners-section {
+  margin-bottom: 24px;
+}
+
+.section-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.section-count {
+  background: var(--accent);
+  color: #fff;
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-weight: 700;
+}
+
+.active-miner-card {
+  background: var(--bg-card);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  margin-bottom: 10px;
+  box-shadow: 0 0 15px var(--accent-glow);
+  animation: fadeIn 0.3s ease;
+}
+
+.active-miner-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.active-miner-name {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.active-miner-badge {
+  background: var(--green-glow);
+  color: var(--green);
+  border: 1px solid var(--green);
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.active-miner-stats {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.active-miner-stat {
+  flex: 1;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-sm);
+  padding: 8px;
+  text-align: center;
+}
+
+.active-miner-stat-value {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.active-miner-stat-label {
+  font-size: 10px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.no-active-miners {
+  text-align: center;
+  padding: 24px;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+/* Plan cards */
+.plans-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.plan-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 18px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.plan-card:hover {
+  border-color: var(--accent);
+  background: var(--bg-card-hover);
+  transform: translateY(-2px);
+}
+
+.plan-card:active {
+  transform: translateY(0);
+}
+
+.plan-card.popular::before {
+  content: 'POPULAR';
+  position: absolute;
+  top: 10px;
+  right: -30px;
+  background: var(--accent-gradient);
+  color: #fff;
+  font-size: 9px;
+  font-weight: 800;
+  padding: 3px 35px;
+  transform: rotate(45deg);
+  letter-spacing: 0.5px;
+}
+
+.plan-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.plan-name {
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.plan-price {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.plan-price-icon {
+  font-size: 14px;
+}
+
+.plan-details {
+  display: flex;
+  gap: 16px;
+}
+
+.plan-detail {
+  display: flex;
+  flex-direction: column;
+}
+
+.plan-detail-value {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.plan-detail-label {
+  font-size: 10px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.plan-buy-btn {
+  width: 100%;
+  padding: 12px;
+  border-radius: var(--radius-md);
+  border: none;
+  background: var(--accent-gradient);
+  color: #fff;
+  font-family: var(--font);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 14px;
+  transition: all 0.2s ease;
+  box-shadow: var(--shadow-btn);
+}
+
+.plan-buy-btn:hover {
+  transform: translateY(-1px);
+}
+
+.plan-buy-btn:active {
+  transform: translateY(0);
+}

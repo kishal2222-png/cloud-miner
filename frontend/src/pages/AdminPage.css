@@ -1,0 +1,299 @@
+.admin-page {
+  padding: 20px;
+  max-width: 900px;
+  margin: 0 auto;
+  animation: fadeIn 0.3s ease;
+}
+
+.admin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.admin-title {
+  font-size: 22px;
+  margin: 0;
+}
+
+.admin-back {
+  color: var(--accent);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* Tabs */
+.admin-tabs {
+  display: flex;
+  gap: 4px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  padding: 4px;
+  margin-bottom: 20px;
+  overflow-x: auto;
+}
+
+.admin-tab {
+  flex: 1;
+  padding: 10px 8px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+
+.admin-tab.active {
+  background: var(--bg-card);
+  color: var(--accent);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+/* Messages */
+.admin-msg {
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  margin-bottom: 16px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.admin-msg.success { background: var(--green-glow); border: 1px solid var(--green); color: var(--green); }
+.admin-msg.error { background: #ff446620; border: 1px solid var(--red); color: var(--red); }
+
+.admin-loading { text-align: center; padding: 40px; color: var(--text-muted); }
+.admin-empty { text-align: center; padding: 30px; color: var(--text-muted); font-style: italic; }
+
+/* Stats Dashboard */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+@media (min-width: 600px) {
+  .stats-grid { grid-template-columns: repeat(4, 1fr); }
+}
+
+.stats-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  text-align: center;
+  transition: all 0.2s;
+}
+
+.stats-card:hover { transform: translateY(-2px); }
+
+.stats-card-value {
+  font-size: 22px;
+  font-weight: 900;
+  font-family: 'JetBrains Mono', monospace;
+  margin-bottom: 4px;
+}
+
+.stats-card-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.stats-card.blue .stats-card-value { color: #0098ea; }
+.stats-card.green .stats-card-value { color: var(--green); }
+.stats-card.orange .stats-card-value { color: var(--accent); }
+.stats-card.purple .stats-card-value { color: #a855f7; }
+.stats-card.red .stats-card-value { color: var(--red); }
+.stats-card.cyan .stats-card-value { color: #06b6d4; }
+.stats-card.teal .stats-card-value { color: #14b8a6; }
+.stats-card.amber .stats-card-value { color: #f59e0b; }
+
+/* Section headers */
+.admin-section-header {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  color: var(--text-secondary);
+}
+
+/* User Cards */
+.user-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  margin-bottom: 10px;
+}
+
+.user-card-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.user-avatar-admin {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--accent-gradient);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 16px;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.user-name-admin { font-weight: 700; font-size: 15px; }
+.user-tg { color: var(--text-muted); font-size: 12px; font-weight: 400; }
+.user-meta { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+.user-card-stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.user-stat {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  padding: 6px 10px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-sm);
+}
+
+.val-blue { color: #0098ea; font-weight: 700; }
+.val-green { color: var(--green); font-weight: 700; }
+.val-orange { color: var(--accent); font-weight: 700; }
+.val-red { color: var(--red); font-weight: 700; }
+
+.user-card-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-edit, .btn-ban, .btn-unban, .btn-save, .btn-cancel, .btn-approve, .btn-reject {
+  padding: 8px 16px;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-family: var(--font);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-edit { background: #0098ea20; color: #0098ea; }
+.btn-ban { background: #ff446620; color: var(--red); }
+.btn-unban { background: var(--green-glow); color: var(--green); }
+.btn-save { background: var(--accent-gradient); color: #fff; }
+.btn-cancel { background: var(--bg-secondary); color: var(--text-secondary); }
+.btn-approve { background: var(--green-glow); color: var(--green); border: 1px solid var(--green); }
+.btn-reject { background: #ff446620; color: var(--red); border: 1px solid var(--red); }
+
+/* Edit Modal */
+.edit-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 20px;
+}
+
+.edit-modal-content {
+  background: var(--bg-main);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xl);
+  padding: 24px;
+  width: 100%;
+  max-width: 400px;
+}
+
+.edit-modal-content h3 { margin: 0 0 16px 0; font-size: 18px; }
+
+.edit-field { margin-bottom: 12px; }
+.edit-field label { display: block; font-size: 12px; color: var(--text-secondary); margin-bottom: 6px; text-transform: uppercase; }
+.edit-field input { width: 100%; padding: 10px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: var(--bg-secondary); color: var(--text-primary); font-family: 'JetBrains Mono', monospace; font-size: 14px; box-sizing: border-box; }
+
+.edit-actions { display: flex; gap: 8px; margin-top: 16px; }
+.edit-actions button { flex: 1; padding: 12px; }
+
+/* Withdrawal Cards */
+.withdrawal-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  margin-bottom: 10px;
+}
+
+.withdrawal-card.status-pending { border-left: 3px solid var(--accent); }
+.withdrawal-card.status-completed { border-left: 3px solid var(--green); }
+.withdrawal-card.status-rejected { border-left: 3px solid var(--red); }
+
+.withdrawal-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 10px;
+}
+
+.withdrawal-user { font-weight: 700; font-size: 14px; }
+.withdrawal-wallet { font-size: 11px; color: var(--text-muted); word-break: break-all; margin-top: 2px; }
+.withdrawal-date-admin { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.withdrawal-amount-admin { font-size: 20px; font-weight: 900; color: #0098ea; font-family: 'JetBrains Mono', monospace; }
+
+.withdrawal-card-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.withdrawal-badge {
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.withdrawal-badge.pending { background: #ff8c0020; color: var(--accent); }
+.withdrawal-badge.completed { background: var(--green-glow); color: var(--green); }
+.withdrawal-badge.rejected { background: #ff446620; color: var(--red); }
+
+.withdrawal-actions { display: flex; gap: 6px; }
+
+/* Transaction Rows */
+.tx-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  margin-bottom: 4px;
+}
+
+.tx-left { display: flex; gap: 10px; align-items: center; }
+.tx-type { font-size: 11px; padding: 3px 8px; background: var(--bg-secondary); border-radius: 6px; font-weight: 600; color: var(--text-secondary); }
+.tx-user { font-size: 13px; font-weight: 600; }
+.tx-right { text-align: right; }
+.tx-amount { font-size: 14px; font-weight: 700; font-family: 'JetBrains Mono', monospace; display: block; }
+.tx-amount.positive { color: var(--green); }
+.tx-amount.negative { color: var(--red); }
+.tx-date { font-size: 10px; color: var(--text-muted); }

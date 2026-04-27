@@ -1,0 +1,279 @@
+.withdraw-page {
+  padding: 16px;
+  animation: fadeIn 0.3s ease;
+}
+
+/* TON Balance Card */
+.ton-balance-card {
+  background: linear-gradient(135deg, #0098ea18, #0098ea08);
+  border: 1px solid #0098ea40;
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+.ton-balance-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 10px;
+}
+
+.ton-balance-icon {
+  font-size: 36px;
+  filter: drop-shadow(0 0 10px #0098ea60);
+}
+
+.ton-balance-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.ton-balance-value {
+  font-size: 28px;
+  font-weight: 900;
+  color: #0098ea;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.ton-balance-hashrate {
+  font-size: 12px;
+  color: var(--text-muted);
+  padding-top: 8px;
+  border-top: 1px solid var(--border-color);
+}
+
+/* Tab Switcher */
+.withdraw-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  padding: 4px;
+  margin-bottom: 16px;
+}
+
+.withdraw-tab {
+  padding: 12px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.withdraw-tab.active {
+  background: var(--bg-card);
+  color: var(--accent);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+/* Status Message */
+.status-msg {
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  margin-bottom: 16px;
+  font-size: 13px;
+  font-weight: 600;
+  animation: fadeIn 0.3s ease;
+}
+
+.status-msg.success {
+  background: var(--green-glow);
+  border: 1px solid var(--green);
+  color: var(--green);
+}
+
+.status-msg.error {
+  background: #ff446620;
+  border: 1px solid var(--red);
+  color: var(--red);
+}
+
+/* Reinvest Section */
+.reinvest-section {
+  animation: fadeIn 0.3s ease;
+}
+
+.reinvest-header {
+  margin-bottom: 16px;
+}
+
+.reinvest-title {
+  font-size: 18px;
+  font-weight: 800;
+  margin: 0 0 6px 0;
+}
+
+.reinvest-desc {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.reinvest-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.reinvest-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  transition: all 0.2s ease;
+}
+
+.reinvest-card:hover:not(.disabled) {
+  border-color: var(--accent);
+  box-shadow: 0 0 12px var(--accent-glow);
+}
+
+.reinvest-card.disabled {
+  opacity: 0.5;
+}
+
+.reinvest-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.reinvest-name {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.reinvest-hashrate {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--green);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.reinvest-card-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.reinvest-price {
+  font-size: 15px;
+  font-weight: 700;
+  color: #0098ea;
+}
+
+.reinvest-btn {
+  padding: 8px 20px;
+  border: none;
+  border-radius: var(--radius-md);
+  background: var(--accent-gradient);
+  color: #fff;
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: var(--shadow-btn);
+}
+
+.reinvest-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(255, 140, 0, 0.3);
+}
+
+.reinvest-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: var(--bg-secondary);
+  color: var(--text-muted);
+  box-shadow: none;
+}
+
+.reinvest-ratio {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.reinvest-tip {
+  margin-top: 16px;
+  padding: 14px;
+  background: linear-gradient(135deg, #ff8c0010, #ff8c0005);
+  border: 1px solid #ff8c0030;
+  border-radius: var(--radius-md);
+  font-size: 12px;
+  color: var(--accent-light);
+  line-height: 1.5;
+}
+
+/* Withdraw Form */
+.withdraw-form {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  animation: fadeIn 0.3s ease;
+}
+
+.withdraw-form-title { font-size: 16px; font-weight: 700; margin-bottom: 16px; }
+
+.form-group { margin-bottom: 14px; }
+.form-label { font-size: 12px; color: var(--text-secondary); margin-bottom: 6px; display: block; text-transform: uppercase; letter-spacing: 0.3px; }
+
+.withdraw-btn {
+  width: 100%;
+  padding: 16px;
+  border-radius: var(--radius-md);
+  border: none;
+  background: linear-gradient(135deg, #0098ea, #0077bb);
+  color: #fff;
+  font-family: var(--font);
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 8px;
+  box-shadow: 0 4px 16px rgba(0, 152, 234, 0.3);
+}
+
+.withdraw-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.withdraw-info {
+  font-size: 12px;
+  color: var(--text-muted);
+  text-align: center;
+  margin-top: 12px;
+}
+
+/* History */
+.withdraw-history { margin-top: 24px; }
+.withdraw-history-title { font-size: 14px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 12px; }
+
+.withdrawal-item {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  margin-bottom: 6px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.withdrawal-coin { font-weight: 600; }
+.withdrawal-amount { font-weight: 700; color: var(--accent); }
+.withdrawal-status { font-size: 11px; padding: 3px 8px; border-radius: 8px; font-weight: 600; }
+.withdrawal-status.pending { background: #ff8c0020; color: var(--accent); }
+.withdrawal-status.completed { background: var(--green-glow); color: var(--green); }
+.withdrawal-date { font-size: 11px; color: var(--text-muted); }
