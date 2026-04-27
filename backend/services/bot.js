@@ -34,8 +34,8 @@ bot.onText(/\/start(.*)/, (msg, match) => {
   }
 
   bot.sendMessage(chatId,
-    '⛏ *Welcome to Cloud Miner!*\n\nStart mining cryptocurrency — no hardware required!\n\n💰 9 popular coins\n🚀 Up to 100M+ H/s\n📤 Zero-commission withdrawals',
-    { parse_mode: 'Markdown', reply_markup: { inline_keyboard: [[{ text: '⛏ Open Cloud Miner', web_app: { url: webAppUrl } }]] } }
+    '⛏ *Welcome to TonVior Cloud Miner!*\n\nStart mining TON cryptocurrency — no hardware required!\n\n💎 Mine TON 24/7\n🚀 Buy mining power\n🔄 Reinvest earnings\n📤 Withdraw TON to wallet',
+    { parse_mode: 'Markdown', reply_markup: { inline_keyboard: [[{ text: '⛏ Open Miner', web_app: { url: webAppUrl } }]] } }
   );
 });
 
